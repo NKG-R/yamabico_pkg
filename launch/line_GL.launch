@@ -1,0 +1,13 @@
+<launch>
+  <node name="line_node" pkg="yamabico_pkg" type="line_GL" respawn="false" output="screen">
+    <remap from="odom" to="/beego/diff_drive_controller/odom"/>
+    <remap from="scan" to="/beego/scan"/>
+    <remap from="cmd_vel" to="/beego/diff_drive_controller/cmd_vel"/>
+    <param name="point_x_double" value="2.0"/>
+    <param name="point_y_double" value="0.0"/>
+    <param name="line_theta_radian" value="0.785"/>
+    <param name="goal_x_double" value="4.0"/>
+    <param name="goal_y_double" value="2.0"/>
+    <param name="max_speed" value="0.4"/>
+  </node>
+</launch>
