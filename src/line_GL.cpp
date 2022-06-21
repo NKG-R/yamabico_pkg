@@ -13,6 +13,9 @@ double double_y = 0.0;  // 追従直線が通る点Pのy
 double max_v = 0.3;     // 速度
 double goal_x = 0.0;    // ゴールのx
 double goal_y = 0.0;    // ゴールのy
+double k_eta = 400.0;
+double k_phai = 300.0;
+double k_w = 200.0;
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
@@ -35,11 +38,6 @@ double get_yaw()
 // 直線追従
 void line_GL(double x, double y, double th)
 {
-    // 制御のパラメータ(調整必須)
-    const double k_eta = 400.0;
-    const double k_phai = 300.0;
-    const double k_w = 200.0;
-
     // 速度と角速度の最大値
     const double w_max = 0.2;
 
@@ -126,6 +124,9 @@ int main(int argc, char **argv)
     pnh.getParam("goal_x_double", goal_x);
     pnh.getParam("goal_y_double", goal_y);
     pnh.getParam("max_speed", max_v);
+    pnh.getParam("gain_eta", k_eta);
+    pnh.getParam("gain_phi", k_phai);
+    pnh.getParam("gain_w", k_w);
 
     pub_msg.linear.x = 0.0;
     pub_msg.angular.z = 0.0;
