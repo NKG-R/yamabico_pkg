@@ -61,8 +61,8 @@ void scan2coord()
     while (i < scan.ranges.size())
     {
         double th = i * 255.0 / 726.0;
-        // th = th - 135.0; // 実機
-        th = th - 120.0; // シミュレータ
+        th = th - 135.0; // 実機
+        // th = th - 120.0; // シミュレータ
         double theta = th * M_PI / 180.0;
         if (!(scan.ranges[i] <= 5.0 && scan.ranges[i] >= 0.1))
             scan.ranges[i] = 100.0;
@@ -101,7 +101,7 @@ void line_LC(double x, double y, double th)
     // 制御のパラメータ(調整必須)
 
     // 角速度の最大値
-    const double w_max = 0.2;
+    const double w_max = 0.5;
 
     // 現在の角速度
     double w0 = pos.twist.twist.angular.z;
@@ -123,14 +123,6 @@ void line_LC(double x, double y, double th)
         eta += wall_distance;
 
     // 直線に対するロボットの向き
-    // double phai = M_PI / 2.0 - th;
-    // while (phai <= -M_PI || M_PI <= phai)
-    // {
-    //     if (phai <= -M_PI)
-    //         phai = phai + 2 * M_PI;
-    //     else
-    //         phai = phai - 2 * M_PI;
-    // }
     double phai = -th;
 
     // 角速度
@@ -140,7 +132,6 @@ void line_LC(double x, double y, double th)
     else if (w < -w_max)
         w = -w_max;
 
-    std::cout << " theta : " << th << std::endl;
     std::cout << "eta: " << eta << "  phai; " << phai << "  w0:" << w0 << std::endl;
     std::cout << "------------------------------" << std::endl;
 
