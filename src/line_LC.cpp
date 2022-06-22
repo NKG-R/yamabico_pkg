@@ -9,15 +9,12 @@
 nav_msgs::Odometry pos;
 sensor_msgs::LaserScan scan;
 geometry_msgs::Twist pub_msg;
-double start_x = 0.0;   // 移動開始時のx
-double start_y = 0.0;   // 移動開始時のy
-double start_yaw = 0.0; // 移動開始時の角度
-
 int state = 0;
 double scan_coord[726][2]; // scanデータの座標
 double line_x = 0.0;       // 追従直線が通る点のx
 double line_y = 0.0;       // 追従直線が通る点のy
 double line_theta = 0.0;   // 追従直線の角度
+double max_v = 0.3;        // 速度
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
@@ -58,8 +55,8 @@ void scan2coord()
     while (i < scan.ranges.size())
     {
         double th = i * 255.0 / 725.0;
-        th = th - 135.0;
-        // th = th - 120.0;
+        // th = th - 135.0; // 実機
+        th = th - 120.0; // シミュレータ
         double theta = th * M_PI / 180.0;
         if (!(scan.ranges[i] <= 5.0 && scan.ranges[i] >= 0.1))
             scan.ranges[i] = 0.0;
@@ -69,16 +66,21 @@ void scan2coord()
     }
 }
 
-//　指定した座標付近で停止
-int near_position(double goal_x, double goal_y)
-{
-    double difx = (pos.pose.pose.position.x - start_x) - goal_x;
-    double dify = (pos.pose.pose.position.y - start_y) - goal_y;
-    return (sqrt(difx * difx + dify * dify) < 0.2);
-}
-
 // 壁から0.8mの直線を計算
-void wall2line() {}
+void wall2line()
+{
+    scan2coord();
+    // 直線が通る点を保存
+    line_x = scan_coord[640][0];
+    line_y = scan_coord[640][1];
+    double line_x2 = scan_coord[612][0];
+    double line_y2 = scan_coord[612][1];
+    // 直線の傾き(角度)を保存
+    if ((line_x2 - line_x) != 0)
+        line_theta = atan((line_y2 - line_y) / (line_x2 - line_x));
+    else
+        line_theta = M_PI / 2.0;
+}
 
 // 直線追従
 void line_LC(double x, double y, double th)
@@ -104,9 +106,9 @@ void line_LC(double x, double y, double th)
     else if (th == -M_PI / 2.0)
         eta = -x;
     else if (abs(th) < M_PI / 2.0)
-        eta = (- y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance;
+        eta = (-y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance;
     else
-        eta = -((- y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance);
+        eta = -((-y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance);
     if (eta > 4.0)
         eta = 4.0;
     else if (eta < -4.0)
@@ -122,17 +124,14 @@ void line_LC(double x, double y, double th)
             phai = phai - 2 * M_PI;
     }
 
-    // 目標となるロボットの角速度と現在の角速度の差
-    double w_diff = w0;
-
     // 角速度
-    double w = w0 + (-k_eta * eta - k_phai * phai - k_w * w_diff) * 0.001;
+    double w = w0 + (-k_eta * eta - k_phai * phai - k_w * w0) * 0.001;
     if (w > w_max)
         w = w_max;
     else if (w < -w_max)
         w = -w_max;
 
-    std::cout << "eta: " << eta << "  phai; " << phai << "  w_diff:" << w_diff << std::endl;
+    std::cout << "eta: " << eta << "  phai; " << phai << "  w0:" << w0 << std::endl;
     std::cout << "------------------------------" << std::endl;
 
     // 送信する値
@@ -149,9 +148,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "line_node");
 
     ros::NodeHandle nh;
+    ros::NodeHandle pnh("~");
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odom_callback);
     ros::Subscriber scan_sub = nh.subscribe("scan", 10, scanCallback);
     ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+    pnh.getParam("max_speed", max_v);
 
     pub_msg.linear.x = 0.0;
     pub_msg.angular.z = 0.0;
@@ -173,22 +174,13 @@ int main(int argc, char **argv)
 
         wall2line();
         line_LC(line_x, line_y, line_theta);
-        if (near_position(goal_x, goal_y))
+        if (count == 250)
         {
             pub_msg.linear.x = 0.0;
             pub_msg.angular.z = 0.0;
             count = 0;
             state = 0;
-            std::cout << "finish!" << std::endl;
-            return 0;
-        }
-        else if (count == 250)
-        {
-            pub_msg.linear.x = 0.0;
-            pub_msg.angular.z = 0.0;
-            count = 0;
-            state = 0;
-            std::cout << "20 seconds have passed. finish!" << std::endl;
+            std::cout << "25 seconds have passed. finish!" << std::endl;
             return 0;
         }
         if (state != 0)

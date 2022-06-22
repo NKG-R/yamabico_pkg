@@ -1,7 +1,8 @@
 <launch>
-  <node name="line_node" pkg="yamabico_pkg" type="line_GL" respawn="false" output="screen">
+  <node name="line_node" pkg="yamabico_pkg" type="line_LC" respawn="false" output="screen">
     <remap from="odom" to="/beego/diff_drive_controller/odom"/>
     <remap from="scan" to="/beego/scan"/>
     <remap from="cmd_vel" to="/beego/diff_drive_controller/cmd_vel"/>
+    <param name="max_speed" value="0.3"/>
   </node>
 </launch>
