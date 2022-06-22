@@ -252,13 +252,13 @@ void show_point_LC(double x, double y)
 void go_point_LC(double x, double y)
 {
     // パラメータ
-    double k_v = 1.6;
+    double k_v = 3.0;
     double k_w = 0.8;
     //追従対象との距離
-    double distance = 0.6;
+    double distance = 0.5;
 
     // 速度と角速度の最大値
-    const double v_max = 0.5;
+    const double v_max = 0.8;
     const double w_max = 1.2;
 
     tf::Quaternion quat(pos.pose.pose.orientation.x, pos.pose.pose.orientation.y, pos.pose.pose.orientation.z, pos.pose.pose.orientation.w);

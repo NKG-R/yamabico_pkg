@@ -1,0 +1,25 @@
+<launch>
+	// Settings -----------------------------------------------------------------
+	<arg name="joy_dev" 			default="/dev/input/js0" />
+	<arg name="joy_hz" 				default="5" />
+
+	<arg name="joy_max_speed"		default="0.30" />
+	<arg name="joy_max_turn"		default="0.40" />
+	<arg name="joy_min_r"			default="0.5"/>
+
+
+	// joystick control ----------------------------------------------------------
+	<!-- Joystick motion -->
+	<node pkg="joy" type="joy_node" name="joy_node">
+		<param name="dev" 				value="$(arg joy_dev)" />
+		<param name="autorepeat_rate" 	value="$(arg joy_hz)" />
+	</node>
+
+	<!-- Joy to cmd_vel -->
+	<node pkg="yamabico_pkg" name="teleop_twist_joy_node" type="teleop_twist_joy.py" >
+		<param name="max_speed"	value="$(arg joy_max_speed)" />
+		<param name="max_turn"	value="$(arg joy_max_turn)" />
+		<param name="min_r"		value="$(arg joy_min_r)" />
+	</node>
+
+</launch>

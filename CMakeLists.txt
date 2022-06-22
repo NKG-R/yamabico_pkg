@@ -138,6 +138,7 @@ include
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(karugamo src/karugamo.cpp)
 add_executable(line_GL src/line_GL.cpp)
+add_executable(line_LC src/line_LC.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,6 +155,7 @@ add_executable(line_GL src/line_GL.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(line_GL ${catkin_LIBRARIES})
+target_link_libraries(line_LC ${catkin_LIBRARIES})
 target_link_libraries(karugamo ${catkin_LIBRARIES})
 
 #############
