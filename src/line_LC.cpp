@@ -13,8 +13,14 @@ int state = 0;
 double scan_coord[726][2]; // scanデータの座標
 double line_x = 0.0;       // 追従直線が通る点のx
 double line_y = 0.0;       // 追従直線が通る点のy
-double line_theta = 0.0;   // 追従直線の角度
-double max_v = 0.3;        // 速度
+double line_x2 = 0.0;
+double line_y2 = 0.0;
+double line_theta = 0.0; // 追従直線の角度
+double max_v = 0.3;      // 速度
+double k_eta = 400.0;
+double k_phai = 300.0;
+double k_w = 200.0;
+double wall_distance = 0.8;
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
@@ -54,12 +60,12 @@ void scan2coord()
     int i = 0;
     while (i < scan.ranges.size())
     {
-        double th = i * 255.0 / 725.0;
+        double th = i * 255.0 / 726.0;
         // th = th - 135.0; // 実機
         th = th - 120.0; // シミュレータ
         double theta = th * M_PI / 180.0;
         if (!(scan.ranges[i] <= 5.0 && scan.ranges[i] >= 0.1))
-            scan.ranges[i] = 0.0;
+            scan.ranges[i] = 100.0;
         scan_coord[i][0] = scan.ranges[i] * cos(theta);
         scan_coord[i][1] = scan.ranges[i] * sin(theta);
         i++;
@@ -71,10 +77,17 @@ void wall2line()
 {
     scan2coord();
     // 直線が通る点を保存
-    line_x = scan_coord[640][0];
-    line_y = scan_coord[640][1];
-    double line_x2 = scan_coord[612][0];
-    double line_y2 = scan_coord[612][1];
+    for (int i = -1; i < 2; i++)
+    {
+        line_x = scan_coord[640 + i][0];
+        line_y = scan_coord[640 + i][1];
+        line_x2 = scan_coord[610 + i][0];
+        line_y2 = scan_coord[610 + i][1];
+    }
+    line_x = scan_coord[640][0] /= 3.0;
+    line_y = scan_coord[640][1] /= 3.0;
+    line_x2 = scan_coord[612][0] /= 3.0;
+    line_y2 = scan_coord[612][1] /= 3.0;
     // 直線の傾き(角度)を保存
     if ((line_x2 - line_x) != 0)
         line_theta = atan((line_y2 - line_y) / (line_x2 - line_x));
@@ -86,43 +99,39 @@ void wall2line()
 void line_LC(double x, double y, double th)
 {
     // 制御のパラメータ(調整必須)
-    const double k_eta = 350.0;
-    const double k_phai = 200.0;
-    const double k_w = 200.0;
 
     // 角速度の最大値
     const double w_max = 0.2;
-
-    // 壁から離す距離
-    const double distance = 0.8;
 
     // 現在の角速度
     double w0 = pos.twist.twist.angular.z;
 
     // ロボットと直線の距離
     double eta = 0;
-    if (th == M_PI / 2.0)
-        eta = x;
-    else if (th == -M_PI / 2.0)
-        eta = -x;
-    else if (abs(th) < M_PI / 2.0)
-        eta = (-y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance;
+    if (line_x == line_x2)
+        eta = -line_x;
     else
-        eta = -((-y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance);
+        eta = -abs((line_y2 - line_y) / (line_x2 - line_x) * (-line_x) + line_y) / sqrt(pow(line_y2 - line_y, 2) / pow(line_x2 - line_x, 2) + 1);
     if (eta > 4.0)
         eta = 4.0;
     else if (eta < -4.0)
         eta = -4.0;
 
+    if (eta > 0)
+        eta -= wall_distance;
+    else
+        eta += wall_distance;
+
     // 直線に対するロボットの向き
+    // double phai = M_PI / 2.0 - th;
+    // while (phai <= -M_PI || M_PI <= phai)
+    // {
+    //     if (phai <= -M_PI)
+    //         phai = phai + 2 * M_PI;
+    //     else
+    //         phai = phai - 2 * M_PI;
+    // }
     double phai = -th;
-    while (phai <= -M_PI || M_PI <= phai)
-    {
-        if (phai <= -M_PI)
-            phai = phai + 2 * M_PI;
-        else
-            phai = phai - 2 * M_PI;
-    }
 
     // 角速度
     double w = w0 + (-k_eta * eta - k_phai * phai - k_w * w0) * 0.001;
@@ -131,6 +140,7 @@ void line_LC(double x, double y, double th)
     else if (w < -w_max)
         w = -w_max;
 
+    std::cout << " theta : " << th << std::endl;
     std::cout << "eta: " << eta << "  phai; " << phai << "  w0:" << w0 << std::endl;
     std::cout << "------------------------------" << std::endl;
 
@@ -153,16 +163,13 @@ int main(int argc, char **argv)
     ros::Subscriber scan_sub = nh.subscribe("scan", 10, scanCallback);
     ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     pnh.getParam("max_speed", max_v);
+    pnh.getParam("gain_eta", k_eta);
+    pnh.getParam("gain_phi", k_phai);
+    pnh.getParam("gain_w", k_w);
+    pnh.getParam("wall_d", wall_distance);
 
     pub_msg.linear.x = 0.0;
     pub_msg.angular.z = 0.0;
-
-    pos.pose.pose.position.x = 0.0;
-    pos.pose.pose.position.y = 0.0;
-
-    double origin_x = 0.0;
-    double origin_y = 0.0;
-    double origin_ang = 0.0;
 
     ros::Rate loop_rate(10);
     sleep(1);
@@ -174,13 +181,13 @@ int main(int argc, char **argv)
 
         wall2line();
         line_LC(line_x, line_y, line_theta);
-        if (count == 250)
+        if (count == 300)
         {
             pub_msg.linear.x = 0.0;
             pub_msg.angular.z = 0.0;
             count = 0;
             state = 0;
-            std::cout << "25 seconds have passed. finish!" << std::endl;
+            std::cout << "30 seconds have passed. finish!" << std::endl;
             return 0;
         }
         if (state != 0)

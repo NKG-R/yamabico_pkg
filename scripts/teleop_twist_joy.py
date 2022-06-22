@@ -23,18 +23,12 @@ class JoyTwist(object):
         twist.angular.z = 0.0
 
         # Translational motion --------------------------
-        if joy_msg.buttons[0] == 1:
-            twist.linear.x = joy_msg.axes[1] * self.max_speed
-            twist.linear.y = joy_msg.axes[0] * self.max_speed
+        twist.linear.x = joy_msg.axes[1] * self.max_speed
 
         # Rotational motion -----------------------------
-        if joy_msg.buttons[4] == 1 and joy_msg.buttons[5] == 0:
-            twist.angular.z = self.max_turn
+        twist.angular.z = joy_msg.axes[3] * self.max_turn
 
-        if joy_msg.buttons[4] == 0 and joy_msg.buttons[5] == 1:
-            twist.angular.z = -self.max_turn
-
-        print twist
+        #print twist
         self._twist_pub.publish(twist)
 
 
