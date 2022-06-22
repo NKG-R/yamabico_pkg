@@ -71,22 +71,22 @@ void scan2coord()
     }
 }
 
-// 壁から0.8mの直線を計算
+// 壁の直線を計算
 void wall2line()
 {
     scan2coord();
     // 直線が通る点を保存
     for (int i = -1; i < 2; i++)
     {
-        line_x = scan_coord[640 + i][0];
-        line_y = scan_coord[640 + i][1];
-        line_x2 = scan_coord[610 + i][0];
-        line_y2 = scan_coord[610 + i][1];
+        line_x += scan_coord[640 + i][0];
+        line_y += scan_coord[640 + i][1];
+        line_x2 += scan_coord[610 + i][0];
+        line_y2 += scan_coord[610 + i][1];
     }
-    line_x = scan_coord[640][0] /= 3.0;
-    line_y = scan_coord[640][1] /= 3.0;
-    line_x2 = scan_coord[612][0] /= 3.0;
-    line_y2 = scan_coord[612][1] /= 3.0;
+    line_x /= 3.0;
+    line_y /= 3.0;
+    line_x2 /= 3.0;
+    line_y2 /= 3.0;
     // 直線の傾き(角度)を保存
     if ((line_x2 - line_x) != 0)
         line_theta = atan((line_y2 - line_y) / (line_x2 - line_x));
@@ -131,6 +131,7 @@ void line_LC(double x, double y, double th)
     else if (w < -w_max)
         w = -w_max;
 
+    std::cout << "(x1,y1) " << line_x << ", " << line_y << std::endl;
     std::cout << "eta: " << eta << "  phai; " << phai << "  w0:" << w0 << std::endl;
     std::cout << "------------------------------" << std::endl;
 

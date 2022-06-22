@@ -1,13 +1,13 @@
 <launch>
   <node name="line_node" pkg="yamabico_pkg" type="line_LC" respawn="false" output="screen">
-    <remap from="odom" to="/beego/diff_drive_controller/odom"/>
+    <!-- <remap from="odom" to="/beego/diff_drive_controller/odom"/>
     <remap from="scan" to="/beego/scan"/>
-    <remap from="cmd_vel" to="/beego/diff_drive_controller/cmd_vel"/>
+    <remap from="cmd_vel" to="/beego/diff_drive_controller/cmd_vel"/> -->
     <param name="max_speed" value="0.3"/>
     <param name="max_speed" value="0.3"/>
     <param name="gain_eta" value="350"/>
     <param name="gain_phi" value="200"/>
     <param name="gain_w" value="180"/>
-    <param name="wall_d" value="0.5"/>
+    <param name="wall_d" value="0.8"/>
   </node>
 </launch>
