@@ -83,6 +83,65 @@ void wall2line() {}
 // 直線追従
 void line_LC(double x, double y, double th)
 {
+    // 制御のパラメータ(調整必須)
+    const double k_eta = 350.0;
+    const double k_phai = 200.0;
+    const double k_w = 200.0;
+
+    // 角速度の最大値
+    const double w_max = 0.2;
+
+    // 壁から離す距離
+    const double distance = 0.8;
+
+    // 現在の角速度
+    double w0 = pos.twist.twist.angular.z;
+
+    // ロボットと直線の距離
+    double eta = 0;
+    if (th == M_PI / 2.0)
+        eta = x;
+    else if (th == -M_PI / 2.0)
+        eta = -x;
+    else if (abs(th) < M_PI / 2.0)
+        eta = (- y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance;
+    else
+        eta = -((- y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1) - distance);
+    if (eta > 4.0)
+        eta = 4.0;
+    else if (eta < -4.0)
+        eta = -4.0;
+
+    // 直線に対するロボットの向き
+    double phai = -th;
+    while (phai <= -M_PI || M_PI <= phai)
+    {
+        if (phai <= -M_PI)
+            phai = phai + 2 * M_PI;
+        else
+            phai = phai - 2 * M_PI;
+    }
+
+    // 目標となるロボットの角速度と現在の角速度の差
+    double w_diff = w0;
+
+    // 角速度
+    double w = w0 + (-k_eta * eta - k_phai * phai - k_w * w_diff) * 0.001;
+    if (w > w_max)
+        w = w_max;
+    else if (w < -w_max)
+        w = -w_max;
+
+    std::cout << "eta: " << eta << "  phai; " << phai << "  w_diff:" << w_diff << std::endl;
+    std::cout << "------------------------------" << std::endl;
+
+    // 送信する値
+    pub_msg.linear.x = max_v;
+    pub_msg.linear.y = 0.0;
+    pub_msg.linear.z = 0.0;
+    pub_msg.angular.x = 0.0;
+    pub_msg.angular.y = 0.0;
+    pub_msg.angular.z = w;
 }
 
 int main(int argc, char **argv)
