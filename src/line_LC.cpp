@@ -9,7 +9,6 @@
 nav_msgs::Odometry pos;
 sensor_msgs::LaserScan scan;
 geometry_msgs::Twist pub_msg;
-int state = 0;
 double scan_coord[726][2]; // scanデータの座標
 double line_x = 0.0;       // 追従直線が通る点のx
 double line_y = 0.0;       // 追従直線が通る点のy
@@ -64,7 +63,7 @@ void scan2coord()
         th = th - 135.0; // 実機
         // th = th - 120.0; // シミュレータ
         double theta = th * M_PI / 180.0;
-        if (!(scan.ranges[i] <= 5.0 && scan.ranges[i] >= 0.1))
+        if (!(scan.ranges[i] <= 5.0 && scan.ranges[i] >= 0.05))
             scan.ranges[i] = 100.0;
         scan_coord[i][0] = scan.ranges[i] * cos(theta);
         scan_coord[i][1] = scan.ranges[i] * sin(theta);
@@ -177,12 +176,10 @@ int main(int argc, char **argv)
             pub_msg.linear.x = 0.0;
             pub_msg.angular.z = 0.0;
             count = 0;
-            state = 0;
             std::cout << "30 seconds have passed. finish!" << std::endl;
             return 0;
         }
-        if (state != 0)
-            count++;
+        count++;
         pub.publish(pub_msg);
         loop_rate.sleep();
     }
