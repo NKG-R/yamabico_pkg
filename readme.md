@@ -45,4 +45,4 @@ ypspur-coordinator　を起動
 
 
 
-※karugamo.launchはgazeboで動かすときに使用します
+※karugamo.launchはgazeboで動かすときに使用します!

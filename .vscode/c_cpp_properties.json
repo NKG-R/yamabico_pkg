@@ -1,0 +1,36 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/nakagawa-n/catkin_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/nakagawa-n/catkin_ws/src/beginner_tutorials/include/**",
+        "/home/nakagawa-n/catkin_ws/src/blower_motor/include/**",
+        "/home/nakagawa-n/catkin_ws/src/DynamixelSDK/ros/dynamixel_sdk/include/**",
+        "/home/nakagawa-n/catkin_ws/src/intro_exam/include/**",
+        "/home/nakagawa-n/catkin_ws/src/LeGO-LOAM-BOR/LeGO-LOAM/include/**",
+        "/home/nakagawa-n/catkin_ws/src/middle_exam/include/**",
+        "/home/nakagawa-n/catkin_ws/src/middle_exam2022/include/**",
+        "/home/nakagawa-n/catkin_ws/src/sample_pkg/include/**",
+        "/home/nakagawa-n/catkin_ws/src/urg_node/include/**",
+        "/home/nakagawa-n/catkin_ws/src/velodyne/velodyne_driver/include/**",
+        "/home/nakagawa-n/catkin_ws/src/velodyne/velodyne_laserscan/include/**",
+        "/home/nakagawa-n/catkin_ws/src/velodyne/velodyne_pcl/include/**",
+        "/home/nakagawa-n/catkin_ws/src/velodyne/velodyne_pointcloud/include/**",
+        "/home/nakagawa-n/catkin_ws/src/ypspur_ros_bridge/include/**",
+        "/home/nakagawa-n/catkin_ws/src/ypspur_ros_bridge_blower/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
